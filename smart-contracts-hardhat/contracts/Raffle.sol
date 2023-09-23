@@ -3,8 +3,10 @@
 pragma solidity ^0.8.18;
 
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
-import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 import {ILiquidityProvider} from "./interfaces/ILiquidityProvider.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title A Raffle Contract
@@ -14,19 +16,21 @@ import {ILiquidityProvider} from "./interfaces/ILiquidityProvider.sol";
  */
 
 contract Raffle is VRFConsumerBaseV2 {
-    error Raffle__NotEnoughEthSent();
+    error Raffle__NotEnoughNativeFeeSent();
+    error Raffle__NotEnoughTokensSent();
     error Raffle__TransferFailed();
-    error Raffle__RaffleNotOpen();
-    error Raffle__UpkeepNotNeeded(
-        uint256 currentBalance,
-        uint256 numPlayers,
-        uint256 raffleState
-    );
+    error Raffle__RaffleNotOpen(RaffleState raffleState);
+    error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 raffleState);
+    error Raffle__InsufficientFunds();
+    error Raffle__RaffleNotClosed(RaffleState raffleState);
 
     /** Type Declarations */
     enum RaffleState {
         OPEN,
-        CALCULATING
+        ACCURING,
+        WITHDRAWN,
+        CALCULATING,
+        CLOSED
     }
 
     /** State Variables */
@@ -34,58 +38,130 @@ contract Raffle is VRFConsumerBaseV2 {
     uint32 private constant NUM_WORDS = 1;
 
     uint256 private immutable i_entranceFee;
-    // @dev Duration of the raffle in seconds
+    // @dev Duration for which the users can supply funds to raffle in seconds
     uint256 private immutable i_interval;
+    // @dev Duartion for which the funds are accuring interest at the liquidityProvider in seconds
+    uint256 private immutable i_accureInterval;
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
     bytes32 private immutable i_gasLane;
     uint64 private immutable i_subscriptionId;
     uint32 private immutable i_callbackGasLimit;
+    address private immutable i_deployerAddress;
 
     uint256 private s_lastTimeStamp;
     address payable[] private s_players;
+    mapping(address => uint256) private s_playersAmount;
     address private s_recentWinner;
     RaffleState private s_raffleState;
+    uint256 private s_nativeFee;
 
-    ILiquidityProvider private i_liquidityProvider;
+    uint256 private s_poolSupplyAmount;
+    uint256 private s_poolRewardsAmount;
+
+    bool private s_transferedTokens;
+    bool private s_withdrawnTokens;
+
+    IERC20 private asset;
+    ILiquidityProvider private liquidityProvider;
 
     /** Events */
-    event EnteredRaffle(address indexed player);
-    event RaffleWinner(address indexed winner);
+    event EnteredRaffle(
+        address indexed player,
+        uint256 amount,
+        uint256 totalAmount
+    );
+    event RaffleWinner(
+        address indexed winner,
+        uint256 suppliedAmount,
+        uint256 rewardsAmount
+    );
     event RequestedRaffleWinner(uint256 indexed requestId);
 
+    event ExitedRaffle(address indexed player, uint256 amount);
+    event WinnerWithdrewRewards(
+        address indexed winner,
+        uint256 amount,
+        uint256 rewardsAmount
+    );
+
+    /** Functions */
     constructor(
+        address assetAddress,
+        uint256 nativeFee,
         uint256 entranceFee,
         uint256 interval,
+        uint256 accureInterval,
+        address liquidityProviderAddress,
         address vrfCoordinator,
         bytes32 gasLane,
         uint64 subscriptionId,
-        uint32 callbackGasLimit,
-        address liquidityProviderAddress
+        uint32 callbackGasLimit
     ) VRFConsumerBaseV2(vrfCoordinator) {
+        asset = IERC20(assetAddress);
         i_entranceFee = entranceFee;
+        s_nativeFee = nativeFee;
         i_interval = interval;
+        i_accureInterval = accureInterval;
+
         i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinator);
         i_gasLane = gasLane;
         i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;
+
+        i_deployerAddress = msg.sender;
+
         s_lastTimeStamp = block.timestamp;
         s_raffleState = RaffleState.OPEN;
-        i_liquidityProvider = ILiquidityProvider(liquidityProviderAddress);
+        liquidityProvider = ILiquidityProvider(liquidityProviderAddress);
+
+        s_transferedTokens = false;
+        s_withdrawnTokens = false;
+
+        asset.approve(address(liquidityProvider), type(uint256).max);
     }
 
-    function enterRaffle() external payable {
-        if (msg.value < i_entranceFee) {
-            // more gas efficient than require.
-            revert Raffle__NotEnoughEthSent();
+    /**
+     * @notice This function is used to enter into the raffle.
+     * @notice This function is payable, and the user is required to pay a small nativeFee for the transfers.
+     * @notice This function will transfer the tokens amounting to entranceFee from the user to the contract.
+     * @dev This function will revert if the raffle is not in OPEN state.
+     */
+    function enterRaffle(uint256 transferAmount) external payable {
+        if (msg.value < s_nativeFee) {
+            revert Raffle__NotEnoughNativeFeeSent();
         }
 
         if (s_raffleState != RaffleState.OPEN) {
-            revert Raffle__RaffleNotOpen();
+            revert Raffle__RaffleNotOpen(s_raffleState);
         }
 
-        s_players.push(payable(msg.sender));
+        if (transferAmount < i_entranceFee) {
+            revert Raffle__NotEnoughTokensSent();
+        }
 
-        emit EnteredRaffle(msg.sender);
+        uint256 count = SafeMath.div(transferAmount, i_entranceFee);
+
+        transferAmount = SafeMath.mul(count, i_entranceFee);
+
+        asset.transferFrom(msg.sender, address(this), transferAmount);
+
+        unchecked {
+            for (uint256 i = 0; i < count; i++) {
+                s_players.push(payable(msg.sender));
+            }
+        }
+
+        s_playersAmount[msg.sender] += transferAmount;
+
+        emit EnteredRaffle(
+            msg.sender,
+            transferAmount,
+            s_playersAmount[msg.sender]
+        );
+    }
+
+    function checkTimeHasPassed(uint256 interval) internal view returns (bool) {
+        return (block.timestamp - s_lastTimeStamp >= interval);
     }
 
     /**
@@ -99,11 +175,32 @@ contract Raffle is VRFConsumerBaseV2 {
     function checkUpkeep(
         bytes memory /* checkData */
     ) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
-        bool timeHasPassed = (block.timestamp - s_lastTimeStamp >= i_interval);
-        bool isOpen = RaffleState.OPEN == s_raffleState;
-        bool hasBalance = address(this).balance > 0;
-        bool hasPlayers = s_players.length > 0;
-        upkeepNeeded = timeHasPassed && isOpen && hasBalance && hasPlayers;
+        if (s_raffleState == RaffleState.CLOSED) {
+            upkeepNeeded = false;
+            return (upkeepNeeded, "0x0");
+        }
+
+        if (!s_transferedTokens) {
+            bool timeHasPassed = checkTimeHasPassed(i_interval);
+            bool hasBalance = asset.balanceOf(address(this)) > 0;
+            bool hasPlayers = s_players.length > 0;
+            bool canTransferFunds = timeHasPassed && hasBalance && hasPlayers;
+
+            if (canTransferFunds) {
+                upkeepNeeded = true;
+                return (upkeepNeeded, "0x0");
+            }
+        }
+
+        if (!s_withdrawnTokens) {
+            bool timeHasPassed = checkTimeHasPassed(i_accureInterval);
+
+            if (timeHasPassed) {
+                upkeepNeeded = true;
+                return (upkeepNeeded, "0x0");
+            }
+        }
+
         return (upkeepNeeded, "0x0");
     }
 
@@ -112,15 +209,49 @@ contract Raffle is VRFConsumerBaseV2 {
         if (!upkeepNeeded) {
             revert Raffle__UpkeepNotNeeded(
                 address(this).balance,
-                s_players.length,
                 uint256(s_raffleState)
             );
         }
 
-        pickWinner();
+        if (s_raffleState == RaffleState.OPEN && !s_transferedTokens) {
+            supplyTokens();
+        } else if (
+            s_raffleState == RaffleState.ACCURING && !s_withdrawnTokens
+        ) {
+            withdrawTokens();
+        }
     }
 
-    function pickWinner() internal {
+    function supplyTokens() internal {
+        s_transferedTokens = true;
+        s_raffleState = RaffleState.ACCURING;
+        s_lastTimeStamp = block.timestamp;
+
+        s_poolSupplyAmount = asset.balanceOf(address(this));
+
+        liquidityProvider.supply(
+            address(this),
+            address(asset),
+            s_poolSupplyAmount
+        );
+    }
+
+    function withdrawTokens() internal {
+        s_withdrawnTokens = true;
+        s_raffleState = RaffleState.WITHDRAWN;
+
+        liquidityProvider.withdrawSupplyAndRewards(
+            address(this),
+            address(asset)
+        );
+
+        s_poolRewardsAmount =
+            asset.balanceOf(address(this)) -
+            s_poolSupplyAmount;
+        requestPickWinner();
+    }
+
+    function requestPickWinner() internal {
         // Check enough time has passed
 
         s_raffleState = RaffleState.CALCULATING;
@@ -145,23 +276,66 @@ contract Raffle is VRFConsumerBaseV2 {
         address payable winner = s_players[indexOfWinner];
         s_recentWinner = winner;
 
-        s_raffleState = RaffleState.OPEN;
-        s_players = new address payable[](0);
+        s_raffleState = RaffleState.CLOSED;
         s_lastTimeStamp = block.timestamp;
 
-        (bool success, ) = winner.call{value: address(this).balance}("");
-        if (!success) {
-            revert Raffle__TransferFailed();
+        emit RaffleWinner(winner, s_playersAmount[winner], s_poolRewardsAmount);
+    }
+
+    function playerWithdrawFunds() external {
+        if (s_raffleState != RaffleState.CLOSED) {
+            revert Raffle__RaffleNotClosed(s_raffleState);
         }
 
-        emit RaffleWinner(winner);
+        uint256 amount = s_playersAmount[msg.sender];
+
+        if (amount == 0) {
+            revert Raffle__InsufficientFunds();
+        }
+
+        bool isWinner = false;
+
+        if (msg.sender == s_recentWinner) {
+            amount += s_poolRewardsAmount;
+            isWinner = true;
+        }
+
+        s_playersAmount[msg.sender] = 0;
+
+        asset.transfer(msg.sender, amount);
+
+        emit ExitedRaffle(msg.sender, amount);
+        if (isWinner) {
+            emit WinnerWithdrewRewards(msg.sender, amount, s_poolRewardsAmount);
+        }
     }
 
     /**
      * Getter Functions
      */
+
+    function getAssetAddress() external view returns (address) {
+        return address(asset);
+    }
+
+    function getLiquidityProviderAddress() external view returns (address) {
+        return address(liquidityProvider);
+    }
+
     function getEntranceFee() external view returns (uint256) {
         return i_entranceFee;
+    }
+
+    function getInterval() external view returns (uint256) {
+        return i_interval;
+    }
+
+    function getAccureInterval() external view returns (uint256) {
+        return i_accureInterval;
+    }
+
+    function getNativeFee() external view returns (uint256) {
+        return s_nativeFee;
     }
 
     function getRaffleState() external view returns (RaffleState) {
@@ -172,8 +346,20 @@ contract Raffle is VRFConsumerBaseV2 {
         return s_players[indexOfPlayer];
     }
 
+    function getPlayerAmount(address player) external view returns (uint256) {
+        return s_playersAmount[player];
+    }
+
+    function getPoolSupplyAmount() external view returns (uint256) {
+        return s_poolSupplyAmount;
+    }
+
     function getRecentWinner() external view returns (address) {
         return s_recentWinner;
+    }
+
+    function getPoolRewardsAmount() external view returns (uint256) {
+        return s_poolRewardsAmount;
     }
 
     function getPlayersCount() external view returns (uint256) {
