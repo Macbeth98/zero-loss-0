@@ -166,11 +166,6 @@ contract Raffle is VRFConsumerBaseV2 {
 
     /**
      * @notice This is function that the Chainlink automation nodes call to see if it's time to perform an upkeep.
-     * The following should be true for this to return true:
-     * 1. The time interval has passed between raffle runs
-     * 2. The raffle is in OPEN state
-     * 3. The contract has ETH (aka, players)
-     * 4. (Implicit) The susbscription is funded with LINK
      */
     function checkUpkeep(
         bytes memory /* checkData */
@@ -200,8 +195,6 @@ contract Raffle is VRFConsumerBaseV2 {
                 return (upkeepNeeded, "0x0");
             }
         }
-
-        return (upkeepNeeded, "0x0");
     }
 
     function performUpkeep(bytes calldata /* performData */) external {
@@ -359,6 +352,11 @@ contract Raffle is VRFConsumerBaseV2 {
     }
 
     function getPoolRewardsAmount() external view returns (uint256) {
+        if (s_transferedTokens && !s_withdrawnTokens) {
+            return
+                liquidityProvider.getBalance(address(this)) -
+                s_poolSupplyAmount;
+        }
         return s_poolRewardsAmount;
     }
 
