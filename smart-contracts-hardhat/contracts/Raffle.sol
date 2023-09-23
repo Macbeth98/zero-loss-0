@@ -14,7 +14,6 @@ import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * @dev Implements Chainlink VRF v2
  * @dev Implements Chainlink Upkeep
  */
-
 contract Raffle is VRFConsumerBaseV2 {
     error Raffle__NotEnoughNativeFeeSent();
     error Raffle__NotEnoughTokensSent();

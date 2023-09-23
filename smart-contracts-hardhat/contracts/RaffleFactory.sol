@@ -6,7 +6,7 @@ import {Raffle} from "./Raffle.sol";
 
 /**
  * @title A Raffle Factory Contract
- * @notice This contract is for creating a simple Raffle contract
+ * @notice This contract is for creating a Liqudity Pool Raffle contract
  */
 contract RaffleFactory {
     /** State Variables */
