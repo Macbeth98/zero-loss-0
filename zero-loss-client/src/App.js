@@ -11,7 +11,7 @@ import Home from "./pages/Home";
 // import Profile from "./pages/Profile";
 // import GameRules from "./pages/GameRules";
 // import AllRecentTickets from "./pages/AllRecentTickets";
-// import ChooseLottery from "./pages/ChooseLottery";
+import ChooseLottery from "./pages/ChooseLottery";
 // import NotFound from "./pages/NotFound";
 
 import Footer from "./components/Footer";
@@ -21,7 +21,7 @@ const App = () => {
   const [login, setLogin] = useState("Unlock Metamask");
   const [loginFlag, setLoginFlag] = useState(false);
   const [metamaskModal, setMetamaskModal] = useState(false);
-  const [coinsLotteries, setCoinsLotteries] = useState([]);
+  // const [coinsLotteries, setCoinsLotteries] = useState([]);
   const [coinsEnabled, setCoinsEnabled] = useState([]);
 
   const [coinAddresses, setCoinAddresses] = useState([
@@ -54,7 +54,6 @@ const App = () => {
         console.log("Accounts: ",accounts);
         if (accounts.length > 0) {
           setCheck(true);
-          console.log("connected pavan pavan");
         } else {
           setCheck(false);
         }
@@ -63,7 +62,6 @@ const App = () => {
         setCheck(false);
       });
     } else {
-      console.log("Failed");
       setCheck(false);
     }
   }, []);
@@ -85,8 +83,8 @@ const App = () => {
     setCoinAddresses,
     coinContracts,
     setCoinContracts,
-    coinsLotteries,
-    setCoinsLotteries,
+    // coinsLotteries,
+    // setCoinsLotteries,
     coinsEnabled,
     setCoinsEnabled
   };
@@ -103,7 +101,7 @@ const App = () => {
               {/* <Route path="/profile" element={<Profile/>}></Route> */}
               {/* <Route path="/rule" element={<GameRules/>}></Route> */}
               {/* <Route path="/allRecentTickets" element={<AllRecentTickets/>}></Route> */}
-              {/* <Route path="/choose-lottery" element={<ChooseLottery/>}></Route> */}
+              <Route path="/choose-lottery" element={<ChooseLottery/>}></Route>
               {/* <Route  element={NotFound} /> */}
             </Routes>
           ) : (
