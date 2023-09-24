@@ -6,7 +6,7 @@ import {Raffle} from "./Raffle.sol";
 
 /**
  * @title A Raffle Factory Contract
- * @notice This contract is for creating a simple Raffle contract
+ * @notice This contract is for creating a Liqudity Pool Raffle contract
  */
 contract RaffleFactory {
     /** State Variables */
@@ -17,8 +17,11 @@ contract RaffleFactory {
 
     /** Functions */
     function createRaffle(
+        address assetAddress,
+        uint256 nativeFee,
         uint256 entranceFee,
         uint256 interval,
+        uint256 accureInterval,
         address vrfCoordinator,
         bytes32 gasLane,
         uint64 subscriptionId,
@@ -26,15 +29,26 @@ contract RaffleFactory {
         address liquidityProviderAddress
     ) external {
         Raffle raffle = new Raffle(
+            assetAddress,
+            nativeFee,
             entranceFee,
             interval,
+            accureInterval,
+            liquidityProviderAddress,
             vrfCoordinator,
             gasLane,
             subscriptionId,
-            callbackGasLimit,
-            liquidityProviderAddress
+            callbackGasLimit
         );
         s_raffles.push(address(raffle));
         emit RaffleCreated(address(raffle), msg.sender);
+    }
+
+    function getRaffles() external view returns (address[] memory) {
+        return s_raffles;
+    }
+
+    function getRaffleCount() external view returns (uint256) {
+        return s_raffles.length;
     }
 }

@@ -101,7 +101,11 @@ const App = () => {
               {/* <Route path="/profile" element={<Profile/>}></Route> */}
               {/* <Route path="/rule" element={<GameRules/>}></Route> */}
               {/* <Route path="/allRecentTickets" element={<AllRecentTickets/>}></Route> */}
+<<<<<<< HEAD
               <Route path="/choose-lottery" element={<ChooseLottery/>}></Route>
+=======
+              {/* <Route path="/choose-lottery" element={<ChooseLottery/>}></Route> */}
+>>>>>>> master
               {/* <Route  element={NotFound} /> */}
             </Routes>
           ) : (

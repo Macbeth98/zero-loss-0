@@ -1,27 +1,82 @@
-import { ethers } from "hardhat";
+import { ethers } from 'hardhat';
+import {
+  ENTRANCE_FEE,
+  NATIVE_FEE,
+  USDC_ADDRESS,
+  USDC_DECIMALS,
+  accureInterval,
+  chainLinkConfig,
+  comet_USDC,
+  compoundCometRewards,
+  interval,
+  parseEther,
+  parseUnits,
+} from '../utils';
 
-async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+async function deployRaffleFactory() {
+  const raffleFactory = await ethers.deployContract('RaffleFactory');
 
-  const lockedAmount = ethers.parseEther("0.001");
+  await raffleFactory.waitForDeployment();
 
-  const lock = await ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+  console.log(`RaffleFactory deployed to ${raffleFactory.target}`);
 
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  return raffleFactory;
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
+const deployCompoundLiquidityProvider = async () => {
+  const compoundLiquidityProvider = await ethers.deployContract('CompoundLiquidityProvider', [
+    USDC_ADDRESS,
+    comet_USDC,
+    compoundCometRewards,
+  ]);
+  await compoundLiquidityProvider.waitForDeployment();
+  console.log(`CompoundLiquidityProvider deployed to ${compoundLiquidityProvider.target}`);
+  return compoundLiquidityProvider;
+};
+
+async function createRaffle(
+  factoryAddress: string = '0x1cb56Eb8e69e13638f9E8d6a15479844C4bdbac0',
+  liquidityProvider: string = '0x5dF1A6E4b9aE1d9972F29DDC08389f804Be70638'
+) {
+  const raffleFactory = await ethers.getContractAt('RaffleFactory', factoryAddress);
+  const tx = await raffleFactory.createRaffle(
+    USDC_ADDRESS,
+    parseEther(NATIVE_FEE),
+    parseUnits(ENTRANCE_FEE, USDC_DECIMALS),
+    interval,
+    accureInterval,
+    chainLinkConfig.GOERLI.vrfCoordinator,
+    chainLinkConfig.GOERLI.gasLane,
+    chainLinkConfig.GOERLI.subscriptionId,
+    chainLinkConfig.GOERLI.callbackGasLimit,
+    liquidityProvider
+  );
+
+  console.log(`Raffle created at ${tx.hash}`);
+
+  return tx;
+}
+
+async function main(predefined: boolean = true) {
+  if (predefined) {
+    return await createRaffle();
+  }
+  await deployRaffleFactory();
+  await deployCompoundLiquidityProvider();
+}
+
+async function createRaffleScript() {
+  const raffleFactory = await deployRaffleFactory();
+  const compoundLiquidityProvider = await deployCompoundLiquidityProvider();
+
+  const tx = await createRaffle(raffleFactory.target.toString(), compoundLiquidityProvider.target.toString());
+  const txReceipt = await tx.wait();
+  console.log('Raffle contract Adddress: ', txReceipt?.contractAddress);
+}
+
+main(false).catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+
+export { deployRaffleFactory, deployCompoundLiquidityProvider, createRaffle, createRaffleScript };
