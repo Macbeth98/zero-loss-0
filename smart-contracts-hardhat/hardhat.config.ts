@@ -1,8 +1,6 @@
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
-
-const SEPOLIA_URL = 'https://ethereum-sepolia.blockpi.network/v1/rpc/public';
-const SEPOLIA_PRIVATE_KEY = 'e0fde4f668d1148f89fbfd851dfb32981410fddaa020ee70a49b82a5defe54c6';
+import { PRIVATE_KEY, SEPOLIA_URL, GOERLI_URL } from './network-config';
 
 const config: HardhatUserConfig = {
   solidity: '0.8.19',
@@ -10,9 +8,19 @@ const config: HardhatUserConfig = {
     apiKey: 'GMW3CW74BPY41P6KDX81318RHZWHVUR749',
   },
   networks: {
+    hardhat: {
+      forking: {
+        url: GOERLI_URL,
+        blockNumber: 9749596,
+      },
+    },
     sepolia: {
       url: SEPOLIA_URL,
-      accounts: [SEPOLIA_PRIVATE_KEY],
+      accounts: [PRIVATE_KEY],
+    },
+    goerli: {
+      url: GOERLI_URL,
+      accounts: [PRIVATE_KEY],
     },
   },
 };

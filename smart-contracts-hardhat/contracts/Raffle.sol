@@ -116,7 +116,7 @@ contract Raffle is VRFConsumerBaseV2 {
         s_transferedTokens = false;
         s_withdrawnTokens = false;
 
-        asset.approve(address(liquidityProvider), type(uint256).max);
+        asset.approve(address(liquidityProvider), type(uint256).max - 1);
     }
 
     /**
