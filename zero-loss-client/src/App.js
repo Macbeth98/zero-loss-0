@@ -71,22 +71,6 @@ const App = () => {
     connectMetamask();
   }, []);
 
-  const value = {
-    login,
-    setLogin,
-    metamaskModal,
-    setMetamaskModal,
-    loginFlag,
-    setLoginFlag,
-    coinAddresses,
-    setCoinAddresses,
-    coinContracts,
-    setCoinContracts,
-    
-    coinsEnabled,
-    setCoinsEnabled,
-  };
-
   return (
     <div className="App">
       <HashRouter basename="/">
@@ -94,7 +78,7 @@ const App = () => {
           {check ? (
             <Routes>
               <Route path="/" element={<Home />}></Route>
-              
+
               <Route path="/choose-lottery" element={<ChooseLottery />}></Route>
             </Routes>
           ) : (
