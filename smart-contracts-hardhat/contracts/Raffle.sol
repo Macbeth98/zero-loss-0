@@ -183,6 +183,9 @@ contract Raffle is VRFConsumerBaseV2 {
             if (canTransferFunds) {
                 upkeepNeeded = true;
                 return (upkeepNeeded, "0x0");
+            } else {
+                upkeepNeeded = false;
+                return (upkeepNeeded, "0x0");
             }
         }
 
