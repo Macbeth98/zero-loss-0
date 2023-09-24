@@ -3,6 +3,24 @@
 This contains the smart contracts that are written for the zero-loss.
 The projects were written, deployed and verfied using hardhat.
 
+#### Installation
+
+```
+npm install
+```
+
+#### Run
+
+```shell
+npx hardhat help
+npx hardhat test
+REPORT_GAS=true npx hardhat test
+npx hardhat node
+npx hardhat run scripts/deploy.ts
+```
+
+- Check Makefile for running of Scripts.
+
 #### Approach
 
 - There is a `RaffleFactory` contract that spits out a `Raffle` contract and keep track of the Raffles created.
@@ -35,13 +53,21 @@ The projects were written, deployed and verfied using hardhat.
 - Compound-Finance V3 was used as the Liquidity Provider, to where the funds are transferred and the funds will get interest from the supply.
 - Implemented a Compound Liquidity Provider based on ILiquidity Provider.
 
+```
+supply, withdraw, balanceOf, claim methods were used
+```
+
 ### AAVE Finance:
 
 - In the similar way, AAVE V3 is used as Liquidity Provider.
+
+```
+supply, withdraw, and claimRewards methods were used.
+```
 
 ---
 
 ### Deployments
 
 - RaffleFactory: [0x188D96ACfC2bf6092264E46fB72Bf7BF068E4128](https://goerli.etherscan.io/address/0x188D96ACfC2bf6092264E46fB72Bf7BF068E4128#code)
-- Raffle: [0x188D96ACfC2bf6092264E46fB72Bf7BF068E4128](https://goerli.etherscan.io/address/0x188d96acfc2bf6092264e46fb72bf7bf068e4128#code)
+- Raffle: [0x0b47c6eBB5A25D0d3D93145745b56609Ec95F75a](https://goerli.etherscan.io/address/0x0b47c6eBB5A25D0d3D93145745b56609Ec95F75a#code)
