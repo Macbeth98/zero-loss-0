@@ -36,26 +36,7 @@ const SelectCoin = () => {
       coinContractObject.address,
       '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
     );
-    // .then(async res => {
-    //     await axios.post(fetchurl.url + "enable_coin", {
-    //         user_eth_addr: res.from,
-    //         coin_name: coinName,
-    //         txn_hash: res.transactionHash,
-    //         timestamp: ts,
-    //         date: date
-    //     });
-    //     message.destroy();
-    //     message.success("Enabling BAT Transaction Success", 0);
-    //     setTimeout(() => {
-    //         message.destroy();
-    //     }, 3000);
-    // })
-    // .catch(e => {
-    //     message.destroy();
-    //     if (e.message.indexOf("User denied") !== -1)
-    //         message.error("Transaction Rejected!!", 3);
-    //     else message.error("Transaction Failed", 3);
-    // });
+    
   };
 
   return (
@@ -70,9 +51,7 @@ const SelectCoin = () => {
             flexWrap: 'wrap',
           }}
         >
-          {/* {value.coinsLotteries.map(item => { */}
-          {/* let coinEnabled = value.coinsEnabled.find(o => o.name === item.coin); */}
-          {/* return ( */}
+          
           <Col>
             <Card
               className=""
@@ -89,9 +68,7 @@ const SelectCoin = () => {
                     <Link
                       to={{
                         pathname: '/choose-lottery',
-                        // state: {
-                        //     coin: item.coin
-                        // }
+                        
                       }}
                     >
                       CHOOSE LOTTERY
@@ -103,12 +80,10 @@ const SelectCoin = () => {
               <Meta
                 avatar={<Avatar src={require(`../img/cc/usdc.svg`)} />}
                 title={<>{'usdc'.toUpperCase()}</>}
-                // description={`#${item.lotteries_length} Lotteries`}
               />
             </Card>
           </Col>
-          {/* );
-                    })} */}
+          
         </Row>
       </div>
     </>

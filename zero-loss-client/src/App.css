@@ -1,18 +1,12 @@
 .hero-background {
-  /* background: #8e2de2;
-  background: -webkit-linear-gradient(to right, #4a00e0, #8e2de2);
-  background: linear-gradient(to right, #4a00e0, #8e2de2);
-  height: 100vh; */
+  
   background-image: url(./img/bg.jpeg);
   background-repeat: no-repeat;
   background-size: cover;
 }
 
 .hero-background1 {
-  /* background: #8e2de2;
-  background: -webkit-linear-gradient(to right, #4a00e0, #8e2de2);
-  background: linear-gradient(to right, #4a00e0, #8e2de2);
-  height: 100vh; */
+  
   background-image: url(./img/bg.jpeg);
   background-repeat: no-repeat;
   background-size: cover;
@@ -21,10 +15,7 @@
 }
 
 .hero-background2 {
-  /* background: #8e2de2;
-  background: -webkit-linear-gradient(to right, #4a00e0, #8e2de2);
-  background: linear-gradient(to right, #4a00e0, #8e2de2);
-  height: 100vh; */
+  
   background-image: url(./img/bg.jpeg);
   background-repeat: no-repeat;
   background-size: cover;
@@ -33,13 +24,9 @@
 }
 
 .App {
-  /* text-align: center; */
   font-family: "Lexend Deca", sans-serif;
   background: #186ab4;
-  /* background-image: url(./img/bg.jpeg); */
-  /* background: #8e2de2; */
-  /* background: -webkit-linear-gradient(to right, #4a00e0, #8e2de2);
-  background: linear-gradient(to right, #4a00e0, #8e2de2); */
+  
 }
 
 .App-logo {
@@ -78,7 +65,6 @@
   background-color: #bbb;
   border-radius: 50%;
   display: inline-block;
-  /* text-align: center; */
   font-weight: 500;
   font-size: 12px;
   display: flex;
@@ -98,10 +84,8 @@
 
 .pop:hover {
   transform: scale(1.1);
-  /* background: green; */
-  /* color: #fff; */
+  
 }
 .menu:hover {
   transform: scale(1.1);
-  /* box-shadow: 10px 0px 5px grey; */
 }
