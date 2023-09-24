@@ -35,8 +35,8 @@ const deployCompoundLiquidityProvider = async () => {
 };
 
 async function createRaffle(
-  factoryAddress: string = '0x1cb56Eb8e69e13638f9E8d6a15479844C4bdbac0',
-  liquidityProvider: string = '0x5dF1A6E4b9aE1d9972F29DDC08389f804Be70638'
+  factoryAddress: string = '0x188D96ACfC2bf6092264E46fB72Bf7BF068E4128',
+  liquidityProvider: string = '0x34Dbc2e9DD2E53dF96dC8B33b716bDf5eA35ebd4'
 ) {
   const raffleFactory = await ethers.getContractAt('RaffleFactory', factoryAddress);
   const tx = await raffleFactory.createRaffle(

@@ -7,8 +7,8 @@ const USDC_DECIMALS = 6;
 
 const NATIVE_FEE = 0.0001;
 const ENTRANCE_FEE = 10;
-const interval = 100;
-const accureInterval = 100;
+const interval = 500;
+const accureInterval = 500;
 
 const chainLinkConfig = {
   SEPOLIA: {
