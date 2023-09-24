@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { createRaffle, deployCompoundLiquidityProvider, deployRaffleFactory } from '../scripts/deploy';
 import { ILiquidityProvider, RaffleFactory } from '../typechain-types';
-import { ethers } from 'hardhat';
 
 describe('RaffleFactory', () => {
   let raffleFactory: RaffleFactory;
