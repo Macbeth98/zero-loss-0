@@ -194,6 +194,8 @@ contract Raffle is VRFConsumerBaseV2 {
                 return (upkeepNeeded, "0x0");
             }
         }
+
+        return (false, "0x0");
     }
 
     function performUpkeep(bytes calldata /* performData */) external {
