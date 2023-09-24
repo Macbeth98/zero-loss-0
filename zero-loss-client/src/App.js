@@ -2,23 +2,23 @@ import React, { useEffect, useState, useContext } from 'react';
 import { HashRouter, BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ethers } from 'ethers';
-import { CoinContext } from "./Context";
+import { CoinContext } from './Context';
 
-import "./App.css";
+import './App.css';
 
-import Home from "./pages/Home";
+import Home from './pages/Home';
 // import Tickets from "./pages/Tickets";
 // import Profile from "./pages/Profile";
 // import GameRules from "./pages/GameRules";
 // import AllRecentTickets from "./pages/AllRecentTickets";
-import ChooseLottery from "./pages/ChooseLottery";
+import ChooseLottery from './pages/ChooseLottery';
 // import NotFound from "./pages/NotFound";
 
-import Footer from "./components/Footer";
+import Footer from './components/Footer';
+import { chainId } from './ethereum/config';
 
 const App = () => {
-
-  const [login, setLogin] = useState("Unlock Metamask");
+  const [login, setLogin] = useState('Unlock Metamask');
   const [loginFlag, setLoginFlag] = useState(false);
   const [metamaskModal, setMetamaskModal] = useState(false);
   // const [coinsLotteries, setCoinsLotteries] = useState([]);
@@ -26,17 +26,17 @@ const App = () => {
 
   const [coinAddresses, setCoinAddresses] = useState([
     {
-      coin: "usdc",
-      address: "0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b"
-    }
-  ])
+      coin: 'usdc',
+      address: '0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b',
+    },
+  ]);
 
   const [coinContracts, setCoinContracts] = useState([
     {
-      coin: "usdc",
-      address: "0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b"
-    }
-  ])
+      coin: 'usdc',
+      address: '0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b',
+    },
+  ]);
 
   const [check, setCheck] = useState(false);
 
@@ -44,33 +44,37 @@ const App = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  
-    // Check if MetaMask is installed and connected
-    if (typeof window.ethereum !== 'undefined') {
-      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-  
-      // Request access to the user's MetaMask account
-      web3Provider.listAccounts().then(accounts => {
-        console.log("Accounts: ",accounts);
-        if (accounts.length > 0) {
-          setCheck(true);
-        } else {
-          setCheck(false);
-        }
-      }).catch(error => {
-        console.error('Error connecting to MetaMask:', error);
-        setCheck(false);
-      });
-    } else {
-      setCheck(false);
-    }
-  }, []);
 
-  // useEffect(() => {
-  //   axios.post("https://localhost:3000/zeroloss/" + "get_coins_lotteries").then(res => {
-  //     setCoinsLotteries(res.data.payload);
-  //   });
-  // }, []);
+    async function connectMetamask() {
+      // Check if MetaMask is installed and connected
+      if (typeof window.ethereum !== 'undefined') {
+        const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+
+        console.log('web3Provider: ', web3Provider);
+
+        // Request access to the user's MetaMask account
+        await web3Provider.send('eth_requestAccounts', []);
+        web3Provider
+          .listAccounts()
+          .then((accounts) => {
+            console.log('Accounts: ', accounts);
+            if (accounts.length > 0) {
+              setCheck(true);
+            } else {
+              setCheck(false);
+            }
+          })
+          .catch((error) => {
+            console.error('Error connecting to MetaMask:', error);
+            setCheck(false);
+          });
+      } else {
+        setCheck(false);
+      }
+    }
+
+    connectMetamask();
+  }, []);
 
   const value = {
     login,
@@ -86,7 +90,7 @@ const App = () => {
     // coinsLotteries,
     // setCoinsLotteries,
     coinsEnabled,
-    setCoinsEnabled
+    setCoinsEnabled,
   };
 
   return (
@@ -101,19 +105,19 @@ const App = () => {
               {/* <Route path="/profile" element={<Profile/>}></Route> */}
               {/* <Route path="/rule" element={<GameRules/>}></Route> */}
               {/* <Route path="/allRecentTickets" element={<AllRecentTickets/>}></Route> */}
-              <Route path="/choose-lottery" element={<ChooseLottery/>}></Route>
+              <Route path="/choose-lottery" element={<ChooseLottery />}></Route>
               {/* <Route  element={NotFound} /> */}
             </Routes>
           ) : (
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100vh"
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100vh',
               }}
             >
-              <div className="card shadow-sm" style={{ padding: "20px" }}>
+              <div className="card shadow-sm" style={{ padding: '20px' }}>
                 <h1 className="display-4">Dear User!</h1>
                 <p className="lead">
                   Install MetaMask in order to use the Zero-Loss-0 App. <br />
@@ -123,7 +127,7 @@ const App = () => {
                 <p>Please click the button below to install MetaMask:</p>
                 <a
                   className="btn btn-primary btn-lg"
-                  href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en" 
+                  href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en"
                   target="_blank"
                   role="button"
                 >
@@ -131,9 +135,7 @@ const App = () => {
                 </a>
               </div>
               &nbsp;&nbsp;
-              {toolTip ? (
-                <img src={require("./img/metamask.png")} alt="MetaMask Logo" width="19%" />
-              ) : null}
+              {toolTip ? <img src={require('./img/metamask.png')} alt="MetaMask Logo" width="19%" /> : null}
             </div>
           )}
           <Footer />
@@ -141,7 +143,6 @@ const App = () => {
       </HashRouter>
     </div>
   );
-
-}
+};
 
 export default App;
