@@ -6,6 +6,9 @@ Welcome to the Zero-Loss-0 Lottery Web3 Project repository on GitHub! This proje
 
 Follow these instructions to get the Zero-Loss-0 Lottery Web3 Project up and running on your local machine.
 
+- Check smart-contract section read me for building and deploying of smart contracts [here](https://github.com/Macbeth98/zero-loss-0/blob/master/smart-contracts-hardhat/README.md).
+- Check the Client section for the client Installation [here](https://github.com/Macbeth98/zero-loss-0/blob/master/zero-loss-client/README.md).
+
 # Prerequisites
 
 Before you begin, ensure you have met the following requirements:
@@ -31,11 +34,3 @@ Chainlink Automation: Chainlink's solution for automating smart contract functio
 Chainlink VRF: Chainlink's Verifiable Random Function for generating secure random numbers on the blockchain.
 Frontend
 The frontend of this project is built using React.js. It provides a user-friendly interface for participants to join the lottery and view lottery results.
-
-# Contributing
-
-Contributions to this project are welcome! If you have ideas for improvements, features to add, or bug fixes, please open an issue or submit a pull request.
-
-# License
-
-This project is licensed under the MIT License. Feel free to use, modify, and distribute it as per the terms of the license.
