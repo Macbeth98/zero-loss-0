@@ -41,4 +41,7 @@ The projects were written, deployed and verfied using hardhat.
 
 ---
 
--> Overall, the contract also has many get methods to give an info about the state of the Raffle Contract
+### Deployments
+
+- RaffleFactory: [0x188D96ACfC2bf6092264E46fB72Bf7BF068E4128](https://goerli.etherscan.io/address/0x188D96ACfC2bf6092264E46fB72Bf7BF068E4128#code)
+- Raffle: [0x188D96ACfC2bf6092264E46fB72Bf7BF068E4128](https://goerli.etherscan.io/address/0x188d96acfc2bf6092264e46fb72bf7bf068e4128#code)
