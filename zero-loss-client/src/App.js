@@ -7,12 +7,8 @@ import { CoinContext } from './Context';
 import './App.css';
 
 import Home from './pages/Home';
-// import Tickets from "./pages/Tickets";
-// import Profile from "./pages/Profile";
-// import GameRules from "./pages/GameRules";
-// import AllRecentTickets from "./pages/AllRecentTickets";
+
 import ChooseLottery from './pages/ChooseLottery';
-// import NotFound from "./pages/NotFound";
 
 import Footer from './components/Footer';
 import { chainId } from './ethereum/config';
@@ -21,7 +17,6 @@ const App = () => {
   const [login, setLogin] = useState('Unlock Metamask');
   const [loginFlag, setLoginFlag] = useState(false);
   const [metamaskModal, setMetamaskModal] = useState(false);
-  // const [coinsLotteries, setCoinsLotteries] = useState([]);
   const [coinsEnabled, setCoinsEnabled] = useState([]);
 
   const [coinAddresses, setCoinAddresses] = useState([
@@ -87,8 +82,7 @@ const App = () => {
     setCoinAddresses,
     coinContracts,
     setCoinContracts,
-    // coinsLotteries,
-    // setCoinsLotteries,
+    
     coinsEnabled,
     setCoinsEnabled,
   };
@@ -100,13 +94,8 @@ const App = () => {
           {check ? (
             <Routes>
               <Route path="/" element={<Home />}></Route>
-              {/* <Route path="/ticket" element={<Tickets/>}></Route> */}
-              {/* <Route  path="/result" element={<Results/>}></Route> */}
-              {/* <Route path="/profile" element={<Profile/>}></Route> */}
-              {/* <Route path="/rule" element={<GameRules/>}></Route> */}
-              {/* <Route path="/allRecentTickets" element={<AllRecentTickets/>}></Route> */}
+              
               <Route path="/choose-lottery" element={<ChooseLottery />}></Route>
-              {/* <Route  element={NotFound} /> */}
             </Routes>
           ) : (
             <div
