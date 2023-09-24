@@ -34,7 +34,10 @@ const deployCompoundLiquidityProvider = async () => {
   return compoundLiquidityProvider;
 };
 
-async function createRaffle(factoryAddress: string, liquidityProvider: string) {
+async function createRaffle(
+  factoryAddress: string = '0x1cb56Eb8e69e13638f9E8d6a15479844C4bdbac0',
+  liquidityProvider: string = '0x5dF1A6E4b9aE1d9972F29DDC08389f804Be70638'
+) {
   const raffleFactory = await ethers.getContractAt('RaffleFactory', factoryAddress);
   const tx = await raffleFactory.createRaffle(
     USDC_ADDRESS,
@@ -54,9 +57,12 @@ async function createRaffle(factoryAddress: string, liquidityProvider: string) {
   return tx;
 }
 
-async function main() {
-  const raffleFactory = await deployRaffleFactory();
-  const compoundLiquidityProvider = await deployCompoundLiquidityProvider();
+async function main(predefined: boolean = true) {
+  if (predefined) {
+    return await createRaffle();
+  }
+  await deployRaffleFactory();
+  await deployCompoundLiquidityProvider();
 }
 
 async function createRaffleScript() {
@@ -68,7 +74,7 @@ async function createRaffleScript() {
   console.log('Raffle contract Adddress: ', txReceipt?.contractAddress);
 }
 
-main().catch((error) => {
+main(false).catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
